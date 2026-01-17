@@ -25,6 +25,9 @@ class IndexTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response,
                             '<a href="sales_dashboard/">Sales Dashboard</a>')
+        self.assertContains(
+            response,
+            '<a href="payment_code_usage/">Payment Code Usage</a>')
 
 
 class SalesDashboardTest(TestCase):
@@ -91,4 +94,101 @@ class SalesDashboardTest(TestCase):
         self.assertContains(
             response,
             '<tr><td>Cash</td><td>1</td><td>1</td><td>2</td><td>$9.00</td></tr>',
+            html=True)
+
+
+class PaymentCodeUsageTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        ticket_model = apps.get_model('reg23', 'Ticket')
+        order_model = apps.get_model('reg23', 'Order')
+        payment_code_model = apps.get_model('reg23', 'PaymentCode')
+        attendee_model = apps.get_model('reg23', 'Attendee')
+
+        ticket = ticket_model.objects.create(
+            name='FULL',
+            description='Full',
+            ticket_type='full',
+            price=100,
+            public=True,
+            cash=True,
+            upgradable=False)
+
+        order_with_attendee = order_model.objects.create(
+            order_num='ORDER0001',
+            valid=True,
+            name='Jane Doe',
+            address='1 Main',
+            city='Portland',
+            state='OR',
+            zip_code='97201',
+            country='USA',
+            email='jane@example.com',
+            phone='',
+            amount=0,
+            payment_type='cash')
+        payment_code_model.objects.create(
+            code='ORDER0001',
+            badge_type=ticket,
+            order=order_with_attendee,
+            max_attendees=3)
+        attendee_model.objects.create(
+            badge_type=ticket,
+            order=order_with_attendee,
+            valid=True,
+            checked_in=False,
+            salutation='Ms',
+            first_name='Sam',
+            last_name='Smith',
+            title='',
+            org='',
+            email='sam@example.com',
+            zip_code='97201',
+            phone='')
+
+        order_without_attendee = order_model.objects.create(
+            order_num='ORDER0002',
+            valid=True,
+            name='No Uses',
+            address='2 Main',
+            city='Portland',
+            state='OR',
+            zip_code='97201',
+            country='USA',
+            email='no@example.com',
+            phone='',
+            amount=0,
+            payment_type='cash')
+        payment_code_model.objects.create(
+            code='ORDER0002',
+            badge_type=ticket,
+            order=order_without_attendee,
+            max_attendees=5)
+
+    def test_not_logged_in(self):
+        response = self.client.get('/reports/payment_code_usage/')
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response, '/admin/login/?next=/reports/payment_code_usage/')
+
+    def test_normal_user_logged_in(self):
+        user = get_user_model().objects.create_user('user', is_staff=False)
+        self.client.force_login(user)
+        response = self.client.get('/reports/payment_code_usage/')
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response, '/admin/login/?next=/reports/payment_code_usage/')
+
+    def test_staff_user_logged_in(self):
+        user = get_user_model().objects.create_user('user', is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get('/reports/payment_code_usage/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Jane Doe')
+        self.assertContains(response, 'ORDER0001')
+        self.assertContains(response, 'Full')
+        self.assertContains(
+            response,
+            '<a href="/admin/reg23/attendee/?q=ORDER0001">View (1)</a>',
             html=True)

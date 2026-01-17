@@ -40,6 +40,7 @@ class AttendeeAdmin(admin.ModelAdmin):
                     'badge_type', 'valid', 'checked_in', 'order', 'promo')
     list_filter = ('badge_type', 'valid', 'checked_in', 'promo',
                    'ordered_items')
+    search_fields = ('order__order_num',)
     save_on_top = True
 
 
