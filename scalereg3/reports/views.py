@@ -72,10 +72,11 @@ def get_payment_code_usage_data():
 
     payment_code_data = []
     for payment_code in payment_codes:
+        attendee_count = attendee_counts_by_order.get(payment_code.order_id, 0)
         payment_code_data.append({
             'payment_code': payment_code,
-            'attendee_count': attendee_counts_by_order.get(
-                payment_code.order_id, 0),
+            'attendee_count': attendee_count,
+            'used_count': attendee_count,
         })
     return payment_code_data
 

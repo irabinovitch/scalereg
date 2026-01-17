@@ -185,10 +185,8 @@ class PaymentCodeUsageTest(TestCase):
         self.client.force_login(user)
         response = self.client.get('/reports/payment_code_usage/')
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Jane Doe')
-        self.assertContains(response, 'ORDER0001')
-        self.assertContains(response, 'Full')
         self.assertContains(
             response,
-            '<a href="/admin/reg23/attendee/?q=ORDER0001">View (1)</a>',
+            '<tr><td>Jane Doe</td><td>ORDER0001</td><td>Full</td><td>1</td><td>3</td>'
+            '<td><a href="/admin/reg23/attendee/?q=ORDER0001">View (1)</a></td></tr>',
             html=True)
