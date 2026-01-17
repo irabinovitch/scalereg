@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="/media/scale/js/sorttable.js"></script>
+{% endblock %}
+{% block coltype %}colMS{% endblock %}
+{% block bodyclass %}dashboard{% endblock %}
+{% block content %}
+<div id="content-main">
+
+<div id="payment-codes">
+<table border="1" class="sortable">
+<tr>
+  <th>Name</th>
+  <th>Payment Code</th>
+  <th>Ticket Type</th>
+  <th>Used</th>
+  <th>Remaining Credits</th>
+  <th>Attendees</th>
+  <th>Edit</th>
+</tr>
+{% for entry in payment_codes %}
+<tr>
+  <td>{{ entry.payment_code.order.name }}</td>
+  <td>{{ entry.payment_code.code }}</td>
+  <td>{{ entry.payment_code.badge_type.get_ticket_type_display }}</td>
+  <td>{{ entry.used_count }}</td>
+  <td>{{ entry.payment_code.max_attendees }}</td>
+  <td>
+  {% if entry.attendee_count %}
+    <a href="/admin/reg23/attendee/?q={{ entry.payment_code.code }}">View ({{ entry.attendee_count }})</a>
+  {% else %}
+    None
+  {% endif %}
+  </td>
+  <td><a href="/admin/reg23/paymentcode/{{ entry.payment_code.code }}/change/">Edit</a></td>
+</tr>
+{% endfor %}
+</table>
+</div>
+</div>
+{% endblock %}

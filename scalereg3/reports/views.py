@@ -1,5 +1,6 @@
 from django.apps import apps
 from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Count
 from django.shortcuts import render
 from django.urls import get_resolver
 from django.urls.resolvers import URLPattern
@@ -56,11 +57,43 @@ def get_orders_data():
     return orders_data
 
 
+def get_payment_code_usage_data():
+    payment_code_model = apps.get_model('reg23', 'PaymentCode')
+    attendee_model = apps.get_model('reg23', 'Attendee')
+
+    payment_codes = payment_code_model.objects.select_related(
+        'order', 'badge_type').order_by('code')
+    attendee_counts = attendee_model.objects.values('order').annotate(
+        count=Count('id'))
+    attendee_counts_by_order = {
+        entry['order']: entry['count']
+        for entry in attendee_counts
+    }
+
+    payment_code_data = []
+    for payment_code in payment_codes:
+        attendee_count = attendee_counts_by_order.get(payment_code.order_id, 0)
+        payment_code_data.append({
+            'payment_code': payment_code,
+            'attendee_count': attendee_count,
+            'used_count': attendee_count,
+        })
+    return payment_code_data
+
+
 @staff_member_required
 def sales_dashboard(request, report_name):
     return render(request, 'reports_sales_dashboard.html', {
         'title': report_name,
         'orders': get_orders_data(),
+    })
+
+
+@staff_member_required
+def payment_code_usage(request, report_name):
+    return render(request, 'reports_payment_code_usage.html', {
+        'title': report_name,
+        'payment_codes': get_payment_code_usage_data(),
     })
 
 
