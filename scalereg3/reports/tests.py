@@ -188,5 +188,6 @@ class PaymentCodeUsageTest(TestCase):
         self.assertContains(
             response,
             '<tr><td>Jane Doe</td><td>ORDER0001</td><td>Full</td><td>1</td><td>3</td>'
-            '<td><a href="/admin/reg23/attendee/?q=ORDER0001">View (1)</a></td></tr>',
+            '<td><a href="/admin/reg23/attendee/?q=ORDER0001">View (1)</a></td>'
+            '<td><a href="/admin/reg23/paymentcode/ORDER0001/change/">Edit</a></td></tr>',
             html=True)

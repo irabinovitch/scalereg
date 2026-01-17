@@ -17,6 +17,7 @@
   <th>Used</th>
   <th>Remaining Credits</th>
   <th>Attendees</th>
+  <th>Edit</th>
 </tr>
 {% for entry in payment_codes %}
 <tr>
@@ -32,6 +33,7 @@
     None
   {% endif %}
   </td>
+  <td><a href="/admin/reg23/paymentcode/{{ entry.payment_code.code }}/change/">Edit</a></td>
 </tr>
 {% endfor %}
 </table>
